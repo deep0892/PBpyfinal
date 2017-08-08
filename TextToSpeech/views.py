@@ -248,10 +248,14 @@ def getfinaldetails(request):
     url="https://policybazaar2:d147cbf154e05ffeca727caf197ad6db24b6f24f@twilix.exotel.in/v1/Accounts/policybazaar2/Calls/"+callSid
     print(url)
     r=requests.get(url)
-    print(r.content)
+    #print(r.content)
     root = ET.fromstring(r.content)
     duration=root[0][11].text
+    EndTime =root[0][10].text
     print(duration)
+    print(EndTime)
+    
+    EndTime=urllib.unquote(EndTime)
 
     f= open(os.path.join(BASE, "configurations/databaseconfig.txt"),'r').read()
     f=f.split('\n')
@@ -262,11 +266,8 @@ def getfinaldetails(request):
     con_string ='DRIVER=FreeTDS;DSN=%s;UID=%s;PWD=%s;DATABASE=%s;' % (datasource, username, password ,db)
     conn = pyodbc.connect(con_string)
     cursor = conn.cursor()
-    query="INSERT INTO PBCROMA.MTX.VoiceUrlData_Response(callsid,duration) VALUES ('"+callSid+"','"+duration+"');"
+    query="INSERT INTO PBCROMA.MTX.VoiceUrlData_Response(callsid,duration,endtime) VALUES ('"+callSid+"','"+duration+"','"+EndTime+"');"
     print(query)
     cursor.execute(query)
     conn.commit()
-
-
-
     return HttpResponse(status=200)
