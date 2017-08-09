@@ -85,7 +85,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'PBpy.wsgi.application'
 
-APPEND_SLASH=False
+APPEND_SLASH=True
 
 
 # Database
