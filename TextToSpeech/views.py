@@ -249,11 +249,18 @@ def getfinaldetails(request):
     print(url)
     r=requests.get(url)
     #print(r.content)
+
+    print(r.status_code)
+
+    if r.status_code != 200:
+      return HttpResponse(status=404)
+
+
     root = ET.fromstring(r.content)
     duration=root[0][11].text
     EndTime =root[0][10].text
-    print(duration)
-    print(EndTime)
+    #print(duration)
+    #print(EndTime)
     
     EndTime=urllib.unquote(EndTime)
 
@@ -269,5 +276,10 @@ def getfinaldetails(request):
     query="INSERT INTO PBCROMA.MTX.VoiceUrlData_Response(callsid,duration,endtime) VALUES ('"+callSid+"','"+duration+"','"+EndTime+"');"
     print(query)
     cursor.execute(query)
+    
+    query="UPDATE MTX.VoiceUrlData SET IsActive=0 WHERE CallSId= '"+callSid+"';" 
+    cursor.execute(query)
+
     conn.commit()
+    
     return HttpResponse(status=200)
