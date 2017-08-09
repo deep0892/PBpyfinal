@@ -17,8 +17,8 @@ from pymongo import MongoClient
 import datetime
 from watson_developer_cloud import DocumentConversionV1
 import requests
-import pandas as pd
-import csv
+#import pandas as pd
+#import csv
 from watson_developer_cloud import NaturalLanguageUnderstandingV1
 import watson_developer_cloud.natural_language_understanding.features.v1 as Features
 from datetime import datetime
