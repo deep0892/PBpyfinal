@@ -195,7 +195,7 @@ def saveExotelResponse(request):
          if(feed_bot):
              try:
                  data=request.query_params
-                 callSid=data['CallSid']
+                 callsid=data['CallSid']
                  DialCallDuration=data['DialCallDuration']
                  EndTime=data['EndTime']
                  CallType=data['CallType']
