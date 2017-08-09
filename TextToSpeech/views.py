@@ -278,6 +278,7 @@ def getfinaldetails(request):
     cursor.execute(query)
     
     query="UPDATE MTX.VoiceUrlData SET IsActive=0 WHERE CallSId= '"+callSid+"';" 
+    print(query)
     cursor.execute(query)
 
     conn.commit()
