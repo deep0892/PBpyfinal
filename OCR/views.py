@@ -19,14 +19,34 @@ import csv
 
 #for opening and extracting values from configuration file
 BASE = os.path.dirname(os.path.abspath(__file__))
-f= open(os.path.join(BASE, "config.txt"),'r').read()
-f=f.split('\n')
-uname=f[0].split('=')[1]
-pas=f[1].split('=')[1]
-ver=f[2].split('=')[1]
-env_id=f[3].split('=')[1]
-coll_id=f[4].split('=')[1]
 
+
+url = 'mongodb://localhost:27017/'
+client = MongoClient(url)
+db = client.communicationDB
+
+#connect to sql database
+
+collection=db.PythonAPISettings
+sqlconfig=collection.find_one({"type":"sqldatabaseconfig"})
+
+print(sqlconfig)
+sql_username=sqlconfig["username"]
+sql_password=sqlconfig["password"]
+sql_db=sqlconfig["db"]
+sql_datasource=sqlconfig["datasource"]
+sql_con_string ='DRIVER=FreeTDS;DSN=%s;UID=%s;PWD=%s;DATABASE=%s;' % (sql_datasource, sql_username, sql_password ,sql_db)
+
+collection=db.watsonconfig
+watson_config=collection.find_one({"type":"watsonconfig"})
+
+uname=watson_config["username"]
+pas=watson_config["password"]
+ver=watson_config["version"]
+env_id=watson_config["enviornment_id"]
+coll_id=watson_config["collection_id"]
+
+print(watson_config)
 
 #for adding a document
 @api_view(['POST'])
@@ -129,8 +149,6 @@ def query(request):
     return HttpResponse(jsonValidateReturn, content_type='application/json')# ,mimetype='application/json')       
     
 def insertmongo(data):
-    url = 'mongodb://10.0.8.62:27017/'
-    client = MongoClient(url)
     db = client.watson
     OcrResponse=db.OcrResponse
     OcrResponse.insert(data)

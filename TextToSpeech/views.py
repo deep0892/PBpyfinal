@@ -17,18 +17,29 @@ from botocore.exceptions import BotoCoreError, ClientError
 import base64
 from django.contrib.auth import authenticate
 import urllib
+from pymongo import MongoClient
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 
+
+url = 'mongodb://localhost:27017/'
+client = MongoClient(url)
+db = client.communicationDB
+
+#connect to sql database
+
+collection=db.PythonAPISettings
+sqlconfig=collection.find_one({"type":"sqldatabaseconfig"})
+print(sqlconfig)
+sql_username=sqlconfig["username"]
+sql_password=sqlconfig["password"]
+sql_db=sqlconfig["db"]
+sql_datasource=sqlconfig["datasource"]
+sql_con_string ='DRIVER=FreeTDS;DSN=%s;UID=%s;PWD=%s;DATABASE=%s;' % (sql_datasource, sql_username, sql_password ,sql_db)
+
+
 def save_res(leadId,customerId,Policyno,Insurer,mobileno,url,sid):
-    f= open(os.path.join(BASE, "configurations/databaseconfig.txt"),'r').read()
-    f=f.split('\n')
-    username=f[0].split(':')[1]
-    password=f[1].split(':')[1]
-    db=f[2].split(':')[1]
-    datasource=f[3].split(':')[1]
-    con_string ='DRIVER=FreeTDS;DSN=%s;UID=%s;PWD=%s;DATABASE=%s;' % (datasource, username, password ,db)
-    conn = pyodbc.connect(con_string)
+    conn = pyodbc.connect(sql_con_string)
     cursor = conn.cursor()
     url=url+"&filename=xyz.mp3"    
     query="INSERT INTO PBCROMA.MTX.VOICEURLDATA(callsid,leadid,customerid,policyno,insurer,mobileno,url) VALUES ('"+sid+"',"+leadId+","+customerId+",'"+Policyno+"','"+Insurer+"',"+mobileno+",'"+url+"');"
@@ -49,50 +60,64 @@ def geturl(filename,leadId,customerId):
 
 
 def save_polly(policyno, insurer,leadid,customerId):
-        f= open(os.path.join(BASE, "configurations/userconfig.txt"),'r').read()
-        f=f.split('\n')
-        region=f[0].split('$')[1]
-        accesskey=f[1].split('$')[1]
-        secretkey=f[2].split('$')[1]
-        session = Session(region_name=region,aws_access_key_id=accesskey,aws_secret_access_key=secretkey)
-        polly = session.client("polly")
-        policyno=str(policyno)
-        insurer=str(insurer)
-        f= open(os.path.join(BASE, "configurations/speechconfig.txt"),'r').read()
-        f=f.split('$')
-        text = f[0]+insurer+f[1]+policyno+f[2]
-        response = polly.synthesize_speech(Text=text,VoiceId="Raveena",OutputFormat="mp3",TextType="ssml")
-        stream=response.get("AudioStream")
-        if stream:
-            data=stream.read()
-            filename=os.path.join(BASE, "voices/"+policyno+str(datetime.datetime.now())+".mp3")
-            filename=filename.replace(" ", "")
-            with open(filename, 'wb') as f:
-                f.write(data)
-                print("File Saved")
-                f.close()
-            docurl=geturl(filename,leadid,customerId)
-            obj={
+    collection=db.pollyconfig
+    polly_config=collection.find_one({"type":"pollyconfig"})
+    print(polly_config)
+
+    region=polly_config["region_name"]
+    accesskey=polly_config["aws_access_key_id"]
+    secretkey=polly_config["aws_secret_access_key"]
+
+    session = Session(region_name=region,aws_access_key_id=accesskey,aws_secret_access_key=secretkey)
+    polly = session.client("polly")
+    policyno=str(policyno)
+    insurer=str(insurer)
+
+    collection=db.speechconfig
+    speech_config=collection.find_one({"type":"speechconfig"})
+    speech=speech_config["speech"]
+    print(speech)
+
+    f=speech.split('$')
+
+
+    text = f[0]+insurer+f[1]+policyno+f[2]
+    response = polly.synthesize_speech(Text=text,VoiceId="Raveena",OutputFormat="mp3",TextType="ssml")
+    stream=response.get("AudioStream")
+    if stream:
+        data=stream.read()
+        filename=os.path.join(BASE, "voices/"+policyno+str(datetime.datetime.now())+".mp3")
+        filename=filename.replace(" ", "")
+        with open(filename, 'wb') as f:
+            f.write(data)
+            print("File Saved")
+            f.close()
+        docurl=geturl(filename,leadid,customerId)
+        obj={
                 "docurl":docurl,
                 "filename":filename
-            }
-            return obj
+        }
+        return obj
 
 
 def give_a_call(mobileno,appidsource=''):  
-    f= open(os.path.join(BASE, "configurations/exotelconfig.txt"),'r')
-    f=f.read().split('\n')
-    if appidsource=='':
-        appid=f[0].split('=')[1]
-    else:
-        appid=f[5].split('=')[1]
-    
-    print('appid', appid)
-    url=f[1].split('=')[1]
-    CallerId=f[2].split('=')[1]
-    CallType=f[3].split('=')[1]
-    auth=f[4].split('=')[1]
 
+    collection=db.exotelconfig
+    exotel_config=collection.find_one({"type":"exotelconfig"})
+    print(exotel_config)
+    
+    url=exotel_config["url"]
+    CallerId=exotel_config["callerid"]
+    CallType=exotel_config["calltype"]
+    auth=exotel_config["Authorization"]
+
+
+
+    if appidsource=='':
+        appid=exotel_config["appid"]
+    else:
+        appid=exotel_config["appid_SDE"]
+ 
     print("calling calling calling.....")
     
     headers = {
@@ -159,15 +184,8 @@ def get_url(request):
          password = decoded_credentials[1]
          feed_bot = authenticate(username=username, password=password)
          if(feed_bot):
-             f= open(os.path.join(BASE, "configurations/databaseconfig.txt"),'r').read()
-             f=f.split('\n')
-             username=f[0].split(':')[1]
-             password=f[1].split(':')[1]
-             db=f[2].split(':')[1]
-             datasource=f[3].split(':')[1]
-             con_string ='DRIVER=FreeTDS;DSN=%s;UID=%s;PWD=%s;DATABASE=%s;' % (datasource, username, password,db)
              try:
-                 conn = pyodbc.connect(con_string)
+                 conn = pyodbc.connect(sql_con_string)
              except:
                  return HttpResponse("Failed to connect to database",content_type="text/plain")
              cursor = conn.cursor()
@@ -211,14 +229,7 @@ def saveExotelResponse(request):
              digits=digits.replace("\"","")
              CurrentTime=urllib.unquote(CurrentTime)   
                
-             f= open(os.path.join(BASE, "configurations/databaseconfig.txt"),'r').read()
-             f=f.split('\n')
-             username=f[0].split(':')[1]
-             password=f[1].split(':')[1]
-             db=f[2].split(':')[1]
-             datasource=f[3].split(':')[1]
-             con_string ='DRIVER=FreeTDS;DSN=%s;UID=%s;PWD=%s;DATABASE=%s;' % (datasource, username, password ,db)
-             conn = pyodbc.connect(con_string)
+             conn = pyodbc.connect(sql_con_string)
              cursor = conn.cursor()
 
              cursor.execute("SELECT * FROM PBCROMA.MTX.VOICEURLDATA (nolock) WHERE callsid='"+callsid+"';")
@@ -264,14 +275,7 @@ def getfinaldetails(request):
     
     EndTime=urllib.unquote(EndTime)
 
-    f= open(os.path.join(BASE, "configurations/databaseconfig.txt"),'r').read()
-    f=f.split('\n')
-    username=f[0].split(':')[1]
-    password=f[1].split(':')[1]
-    db=f[2].split(':')[1]
-    datasource=f[3].split(':')[1]
-    con_string ='DRIVER=FreeTDS;DSN=%s;UID=%s;PWD=%s;DATABASE=%s;' % (datasource, username, password ,db)
-    conn = pyodbc.connect(con_string)
+    conn = pyodbc.connect(sql_con_string)
     cursor = conn.cursor()
     query="INSERT INTO PBCROMA.MTX.VoiceUrlData_Response(callsid,duration,endtime) VALUES ('"+callSid+"','"+duration+"','"+EndTime+"');"
     print(query)
