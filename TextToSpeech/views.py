@@ -23,7 +23,11 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 
 
 url = 'mongodb://10.0.8.62:27017/'
-client = MongoClient(url)
+try:
+    client = MongoClient(url)
+except:
+    client = MongoClient("mongodb://localhost:27017/")
+
 db = client.communicationDB
 
 #connect to sql database
@@ -254,7 +258,7 @@ def saveExotelResponse(request):
 def getfinaldetails(request):
     data=request.data
     print(data)
-    callSid=data['callsid']
+    callSid=data['callsid'] 
     print(callSid)
     url="https://policybazaar2:d147cbf154e05ffeca727caf197ad6db24b6f24f@twilix.exotel.in/v1/Accounts/policybazaar2/Calls/"+callSid
     print(url)
@@ -288,3 +292,25 @@ def getfinaldetails(request):
     conn.commit()
     
     return HttpResponse(status=200)
+
+@api_view(['POST'])
+def saveIVRtoMatrix(request):
+   data=request.data
+   leadId=data["leadid"]
+
+   matrix_config=collection.find_one({"type":"matrixconfig"})
+   url=matrix_config["url"]
+   Authorization=matrix_config["authorization"]
+   print(url)
+   headers = {
+               "Authorization":Authorization       
+    }
+
+   payload={
+       "LeadId":leadId,
+       "responseId":2
+   }
+
+   r=requests.post(url, headers=headers, data=payload)
+
+   print(r.content)
