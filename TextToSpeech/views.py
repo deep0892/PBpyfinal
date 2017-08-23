@@ -60,7 +60,7 @@ def geturl(filename,leadId,customerId):
 
 
 def save_polly(policyno, insurer,leadid,customerId):
-    collection=db.pollyconfig
+    collection=db.PythonAPISettings
     polly_config=collection.find_one({"type":"pollyconfig"})
     print(polly_config)
 
@@ -73,7 +73,7 @@ def save_polly(policyno, insurer,leadid,customerId):
     policyno=str(policyno)
     insurer=str(insurer)
 
-    collection=db.speechconfig
+    collection=db.PythonAPISettings
     speech_config=collection.find_one({"type":"speechconfig"})
     speech=speech_config["speech"]
     print(speech)
@@ -82,7 +82,9 @@ def save_polly(policyno, insurer,leadid,customerId):
 
 
     text = f[0]+insurer+f[1]+policyno+f[2]
+    print(text)
     response = polly.synthesize_speech(Text=text,VoiceId="Raveena",OutputFormat="mp3",TextType="ssml")
+    print(response)
     stream=response.get("AudioStream")
     if stream:
         data=stream.read()
@@ -97,12 +99,13 @@ def save_polly(policyno, insurer,leadid,customerId):
                 "docurl":docurl,
                 "filename":filename
         }
+        print("saved")
         return obj
 
 
 def give_a_call(mobileno,appidsource=''):  
 
-    collection=db.exotelconfig
+    collection=db.PythonAPISettings
     exotel_config=collection.find_one({"type":"exotelconfig"})
     print(exotel_config)
     

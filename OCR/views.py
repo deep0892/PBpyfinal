@@ -37,8 +37,9 @@ sql_db=sqlconfig["db"]
 sql_datasource=sqlconfig["datasource"]
 sql_con_string ='DRIVER=FreeTDS;DSN=%s;UID=%s;PWD=%s;DATABASE=%s;' % (sql_datasource, sql_username, sql_password ,sql_db)
 
-collection=db.watsonconfig
+collection=db.PythonAPISettings
 watson_config=collection.find_one({"type":"watsonconfig"})
+print(watson_config)
 
 uname=watson_config["username"]
 pas=watson_config["password"]
