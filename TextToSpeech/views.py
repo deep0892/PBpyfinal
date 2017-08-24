@@ -24,6 +24,8 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 
 url = 'mongodb://10.0.8.62:27017/'
 client = MongoClient(url)
+
+
 db = client.communicationDB
 
 #connect to sql database
@@ -39,10 +41,16 @@ sql_con_string ='DRIVER=FreeTDS;DSN=%s;UID=%s;PWD=%s;DATABASE=%s;' % (sql_dataso
 
 
 def save_res(leadId,customerId,Policyno,Insurer,mobileno,url,sid):
+    print("saving")
     conn = pyodbc.connect(sql_con_string)
+    print(conn)
     cursor = conn.cursor()
-    url=url+"&filename=xyz.mp3"    
+    print(cursor)
+    
+    #url=url+"&filename=xyz.mp3"    
     query="INSERT INTO PBCROMA.MTX.VOICEURLDATA(callsid,leadid,customerid,policyno,insurer,mobileno,url) VALUES ('"+sid+"',"+leadId+","+customerId+",'"+Policyno+"','"+Insurer+"',"+mobileno+",'"+url+"');"
+    print("below query")
+    print(query)
     cursor.execute(query)
     conn.commit()
     print("saved to database")
@@ -95,12 +103,8 @@ def save_polly(policyno, insurer,leadid,customerId):
             print("File Saved")
             f.close()
         docurl=geturl(filename,leadid,customerId)
-        obj={
-                "docurl":docurl,
-                "filename":filename
-        }
-        print("saved")
-        return obj
+        return docurl
+
 
 
 def give_a_call(mobileno,appidsource=''):  
@@ -118,8 +122,12 @@ def give_a_call(mobileno,appidsource=''):
 
     if appidsource=='':
         appid=exotel_config["appid"]
-    else:
+    elif appidsource=='SDE':
         appid=exotel_config["appid_SDE"]
+    else:
+        appid=exotel_config["appid_HCR"]
+    
+    print(appid)
  
     print("calling calling calling.....")
     
@@ -154,10 +162,8 @@ def pollyexotel(request):
         mobileno=data["mobileno"]
     except:
         return HttpResponse(status=400)
-    obj=save_polly(policyno,insurer,leadId,customerId)
+    url=save_polly(policyno,insurer,leadId,customerId)
     sid=give_a_call(mobileno)
-    url=obj["docurl"]
-    filename=obj["filename"]
     save_res(leadId,customerId,policyno,insurer,mobileno,url,sid)   
     return Response(status=status.HTTP_200_OK)
 
@@ -242,6 +248,8 @@ def saveExotelResponse(request):
                 print("No result is found for given Sid")
              else:
                 print("The given sid is already present in the database")
+                print(query_result)
+                #saveIVRtoMatrix(leadid,responseid)
 
 
 
@@ -257,7 +265,7 @@ def saveExotelResponse(request):
 def getfinaldetails(request):
     data=request.data
     print(data)
-    callSid=data['callsid']
+    callSid=data['callsid'] 
     print(callSid)
     url="https://policybazaar2:d147cbf154e05ffeca727caf197ad6db24b6f24f@twilix.exotel.in/v1/Accounts/policybazaar2/Calls/"+callSid
     print(url)
@@ -291,3 +299,39 @@ def getfinaldetails(request):
     conn.commit()
     
     return HttpResponse(status=200)
+
+@api_view(['POST'])
+def hardcopyrecievalIVR(request):
+    data=request.data
+    try:
+        leadId=data["leadid"]
+        #customerId=data["customerId"]        
+        mobileno=data["mobileno"]
+    except:
+        return HttpResponse(status=400)    
+    sid=give_a_call(mobileno,"HCR")  
+    print("got sid")
+
+    save_res(leadId,'0','','',mobileno,'',sid)   
+    return Response(status=status.HTTP_200_OK)    
+
+
+
+
+def saveIVRtoMatrix(leadId,responseId):
+   matrix_config=collection.find_one({"type":"matrixconfig"})
+   url=matrix_config["url"]
+   Authorization=matrix_config["authorization"]
+   print(url)
+   print(Authorization)
+   
+   headers = {
+               "Authorization":Authorization,
+               "Content-Type": "application/json"
+   }
+   print(headers)
+
+   r=requests.post(url, headers=headers, data=json.dumps({"LeadId":8551,"responseId":2}))
+
+   print(r.content)
+   return HttpResponse(r.content, content_type='application/json')
