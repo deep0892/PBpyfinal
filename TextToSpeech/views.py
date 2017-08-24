@@ -95,11 +95,8 @@ def save_polly(policyno, insurer,leadid,customerId):
             print("File Saved")
             f.close()
         docurl=geturl(filename,leadid,customerId)
-        obj={
-                "docurl":docurl,
-                "filename":filename
-        }
-        return obj
+        return docurl
+
 
 
 def give_a_call(mobileno,appidsource=''):  
@@ -117,8 +114,10 @@ def give_a_call(mobileno,appidsource=''):
 
     if appidsource=='':
         appid=exotel_config["appid"]
-    else:
+    elif appidsource='SDE':
         appid=exotel_config["appid_SDE"]
+    else:
+        appid=exotel_config["appid_HCR"]
  
     print("calling calling calling.....")
     
@@ -153,10 +152,8 @@ def pollyexotel(request):
         mobileno=data["mobileno"]
     except:
         return HttpResponse(status=400)
-    obj=save_polly(policyno,insurer,leadId,customerId)
+    url=save_polly(policyno,insurer,leadId,customerId)
     sid=give_a_call(mobileno)
-    url=obj["docurl"]
-    filename=obj["filename"]
     save_res(leadId,customerId,policyno,insurer,mobileno,url,sid)   
     return Response(status=status.HTTP_200_OK)
 
@@ -241,6 +238,8 @@ def saveExotelResponse(request):
                 print("No result is found for given Sid")
              else:
                 print("The given sid is already present in the database")
+                print(query_result)
+                #saveIVRtoMatrix(leadid,responseid)
 
 
 
@@ -292,23 +291,35 @@ def getfinaldetails(request):
     return HttpResponse(status=200)
 
 @api_view(['POST'])
-def saveIVRtoMatrix(request):
-   data=request.data
-   leadId=data["leadid"]
+def hardcopyrecievalIVR(request):
+    data=request.data
+    try:
+        leadId=data["leadId"]
+        #customerId=data["customerId"]        
+        mobileno=data["mobileno"]
+    except:
+        return HttpResponse(status=400)    
+    sid=give_a_call(mobileno,"HCR")  
+    save_res(leadId,'','','',mobileno,'',sid)   
+    return Response(status=status.HTTP_200_OK)    
 
+
+
+
+def saveIVRtoMatrix(leadId,responseId):
    matrix_config=collection.find_one({"type":"matrixconfig"})
    url=matrix_config["url"]
    Authorization=matrix_config["authorization"]
    print(url)
+   print(Authorization)
+   
    headers = {
-               "Authorization":Authorization       
-    }
-
-   payload={
-       "LeadId":leadId,
-       "responseId":2
+               "Authorization":Authorization,
+               "Content-Type": "application/json"
    }
+   print(headers)
 
-   r=requests.post(url, headers=headers, data=payload)
+   r=requests.post(url, headers=headers, data=json.dumps({"LeadId":8551,"responseId":2}))
 
    print(r.content)
+   return HttpResponse(r.content, content_type='application/json')
