@@ -243,13 +243,17 @@ def saveExotelResponse(request):
 
              cursor.execute("SELECT * FROM PBCROMA.MTX.VOICEURLDATA (nolock) WHERE callsid='"+callsid+"';")
              query_result=cursor.fetchone()
+             print(query_result)
 
              if query_result==None:
                 print("No result is found for given Sid")
+                responseId=1
              else:
                 print("The given sid is already present in the database")
-                print(query_result)
-                #saveIVRtoMatrix(leadid,responseid)
+                responseId=2
+                
+
+            saveIVRtoMatrix(leadid,responseid)
 
 
 
