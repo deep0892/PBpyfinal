@@ -242,10 +242,17 @@ def saveExotelResponse(request):
              cursor = conn.cursor()
 
              cursor.execute("SELECT * FROM PBCROMA.MTX.VOICEURLDATA (nolock) WHERE callsid='"+callsid+"';")
-             query_result=cursor.fetchone()
+             query_result=cursor.fetchall()
+             for row in query_result:
+                 leadId=row[1]
+                 print leadId
+
+             cursor.execute("SELECT * FROM PBCROMA.MTX.VoiceUrlData_Response (nolock) WHERE callsid='"+callsid+"';")
+             query_result=cursor.fetchall()
+
              print(query_result)
 
-             if query_result==None:
+             if not query_result:
                 print("No result is found for given Sid")
                 responseId=1
              else:
@@ -253,12 +260,12 @@ def saveExotelResponse(request):
                 responseId=2
                 
 
-            saveIVRtoMatrix(leadid,responseid)
+             saveIVRtoMatrix(leadId,responseId)
 
 
 
              query="INSERT INTO PBCROMA.MTX.VoiceUrlData_Response(callsid,duration,endtime,flowid,url,custresponse,currenttime,calltype) VALUES ('"+callsid+"','"+DialCallDuration+"','"+EndTime+"','"+flow_id+"','"+RecordingUrl+"','"+digits+"','"+CurrentTime+"','"+CallType+"');"
-             #print(query)
+             print(query)
              cursor.execute(query)
              conn.commit()
              return HttpResponse(status=200)
