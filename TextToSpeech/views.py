@@ -22,7 +22,7 @@ from pymongo import MongoClient
 BASE = os.path.dirname(os.path.abspath(__file__))
 
 
-url = 'mongodb://10.0.8.62:27017/'
+url = 'mongodb://localhost:27017/'
 client = MongoClient(url)
 
 
@@ -40,11 +40,17 @@ sql_datasource=sqlconfig["datasource"]
 sql_con_string ='DRIVER=FreeTDS;DSN=%s;UID=%s;PWD=%s;DATABASE=%s;' % (sql_datasource, sql_username, sql_password ,sql_db)
 
 
-def save_res(leadId,customerId,Policyno,Insurer,mobileno,url,sid):
+def save_res(leadId,customerId,Policyno,Insurer,mobileno,url,sid,flag=""):
+    print("saving")
     conn = pyodbc.connect(sql_con_string)
+    print(conn)
     cursor = conn.cursor()
-    url=url+"&filename=xyz.mp3"    
-    query="INSERT INTO PBCROMA.MTX.VOICEURLDATA(callsid,leadid,customerid,policyno,insurer,mobileno,url) VALUES ('"+sid+"',"+leadId+","+customerId+",'"+Policyno+"','"+Insurer+"',"+mobileno+",'"+url+"');"
+    print(cursor)
+    
+    #url=url+"&filename=xyz.mp3"    
+    query="INSERT INTO PBCROMA.MTX.VOICEURLDATA(callsid,leadid,customerid,policyno,insurer,mobileno,url,appidsource) VALUES ('"+sid+"',"+leadId+","+customerId+",'"+Policyno+"','"+Insurer+"',"+mobileno+",'"+url+"','"+flag+"');"
+    print("below query")
+    print(query)
     cursor.execute(query)
     conn.commit()
     print("saved to database")
@@ -62,7 +68,7 @@ def geturl(filename,leadId,customerId):
 
 
 def save_polly(policyno, insurer,leadid,customerId):
-    collection=db.pollyconfig
+    collection=db.PythonAPISettings
     polly_config=collection.find_one({"type":"pollyconfig"})
     print(polly_config)
 
@@ -75,7 +81,7 @@ def save_polly(policyno, insurer,leadid,customerId):
     policyno=str(policyno)
     insurer=str(insurer)
 
-    collection=db.speechconfig
+    collection=db.PythonAPISettings
     speech_config=collection.find_one({"type":"speechconfig"})
     speech=speech_config["speech"]
     print(speech)
@@ -84,7 +90,9 @@ def save_polly(policyno, insurer,leadid,customerId):
 
 
     text = f[0]+insurer+f[1]+policyno+f[2]
+    print(text)
     response = polly.synthesize_speech(Text=text,VoiceId="Raveena",OutputFormat="mp3",TextType="ssml")
+    print(response)
     stream=response.get("AudioStream")
     if stream:
         data=stream.read()
@@ -101,7 +109,7 @@ def save_polly(policyno, insurer,leadid,customerId):
 
 def give_a_call(mobileno,appidsource=''):  
 
-    collection=db.exotelconfig
+    collection=db.PythonAPISettings
     exotel_config=collection.find_one({"type":"exotelconfig"})
     print(exotel_config)
     
@@ -114,10 +122,12 @@ def give_a_call(mobileno,appidsource=''):
 
     if appidsource=='':
         appid=exotel_config["appid"]
-    elif appidsource='SDE':
+    elif appidsource=='SDE':
         appid=exotel_config["appid_SDE"]
     else:
         appid=exotel_config["appid_HCR"]
+    
+    print(appid)
  
     print("calling calling calling.....")
     
@@ -198,6 +208,24 @@ def get_url(request):
              return HttpResponse(t[0], content_type='text/plain')
          return HttpResponse(status=401)
 
+def saveIVRtoMatrix(leadId,responseId):
+    print("saveIVRtoMatrIX CALLED")
+    print(responseId)
+    matrix_config=collection.find_one({"type":"matrixconfig"})
+    url=matrix_config["url"]
+    Authorization=matrix_config["authorization"]
+    print(url)
+    print(Authorization)
+    headers = {
+               "Authorization":Authorization,
+               "Content-Type": "application/json"
+               }
+    print(headers)
+    r=requests.post(url, headers=headers, data=json.dumps({"LeadId":leadId,"responseId":responseId}))
+    print(r.content)
+    return HttpResponse(r.content, content_type='application/json')
+
+
 @api_view(['GET'])
 def saveExotelResponse(request):
          try:
@@ -232,23 +260,52 @@ def saveExotelResponse(request):
              cursor = conn.cursor()
 
              cursor.execute("SELECT * FROM PBCROMA.MTX.VOICEURLDATA (nolock) WHERE callsid='"+callsid+"';")
-             query_result=cursor.fetchone()
+             query_result=cursor.fetchall()
+             for row in query_result:
+                 leadId=row[1]
+                 appidsource=row[9]
+                 print appidsource
+                 print row
+
+             cursor.execute("SELECT * FROM PBCROMA.MTX.VoiceUrlData_Response (nolock) WHERE callsid='"+callsid+"';")
+             query_result=cursor.fetchall()
+             responsecode=""
+
+             print("digits:"+digits)
+
              print(query_result)
 
-             if query_result==None:
+             if not query_result:
                 print("No result is found for given Sid")
-                responseId=1
+                if appidsource=="HCR":
+                    if digits=='1':
+                        responsecode="HCR"
+                    elif digits=='2':
+                         responsecode="HCNR"
+                    print("inside qr")
+                    saveIVRtoMatrix(leadId,responsecode)              
              else:
                 print("The given sid is already present in the database")
-                responseId=2
+                if appidsource=="HCR":
+                    print("hcr")
+                    if digits=='1':
+                        responsecode="HCR"
+                    elif digits=='2':
+                        responsecode= "HCNR"
+                        print("2222222222")
+                    print("calling function")
+                    print(responsecode)
+                    #print(leadId)
+                    saveIVRtoMatrix(leadId,responsecode)
+
                 
 
-             saveIVRtoMatrix(leadid,responseid)
+             
 
 
 
              query="INSERT INTO PBCROMA.MTX.VoiceUrlData_Response(callsid,duration,endtime,flowid,url,custresponse,currenttime,calltype) VALUES ('"+callsid+"','"+DialCallDuration+"','"+EndTime+"','"+flow_id+"','"+RecordingUrl+"','"+digits+"','"+CurrentTime+"','"+CallType+"');"
-             #print(query)
+             print(query)
              cursor.execute(query)
              conn.commit()
              return HttpResponse(status=200)
@@ -298,32 +355,17 @@ def getfinaldetails(request):
 def hardcopyrecievalIVR(request):
     data=request.data
     try:
-        leadId=data["leadId"]
+        leadId=data["leadid"]
         #customerId=data["customerId"]        
         mobileno=data["mobileno"]
     except:
         return HttpResponse(status=400)    
     sid=give_a_call(mobileno,"HCR")  
-    save_res(leadId,'','','',mobileno,'',sid)   
+    print("got sid")
+
+    save_res(leadId,'0','','',mobileno,'',sid,"HCR")   
     return Response(status=status.HTTP_200_OK)    
 
 
 
 
-def saveIVRtoMatrix(leadId,responseId):
-   matrix_config=collection.find_one({"type":"matrixconfig"})
-   url=matrix_config["url"]
-   Authorization=matrix_config["authorization"]
-   print(url)
-   print(Authorization)
-   
-   headers = {
-               "Authorization":Authorization,
-               "Content-Type": "application/json"
-   }
-   print(headers)
-
-   r=requests.post(url, headers=headers, data=json.dumps({"LeadId":8551,"responseId":2}))
-
-   print(r.content)
-   return HttpResponse(r.content, content_type='application/json')

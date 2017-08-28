@@ -16,6 +16,11 @@ Including another URLconf
 from django.conf.urls import url,include
 from django.contrib import admin
 from NLU.views import result
+from TextToSpeech.views import get_url,saveExotelResponse
+from TextToSpeech.views import pollyexotel,samedayexpiryIVR,getfinaldetails,hardcopyrecievalIVR
+from OCR.views import addDocument,query,get_doc_status,fileupload
+
+
 #from rest_framework import routers
 
 #router = routers.DefaultRouter()
@@ -26,8 +31,15 @@ urlpatterns = [
     #url(r'^', include(router.urls)),
     #url(r'^api-auth/', include('rest_framework.urls')),
     url(r'^admin/', admin.site.urls),
-    url(r'^texttospeech/', include('TextToSpeech.urls')),
-    url(r'^texttospeech/', include('TextToSpeech.urlp')),
-    url(r'^ocr/', include('OCR.urls')),
+    url(r'^texttospeech/polly',pollyexotel ),
+    url(r'^texttospeech/geturl',get_url ),
+    url(r'^texttospeech/callresponse', saveExotelResponse),
+    url(r'^texttospeech/samedayexpiryIVR',samedayexpiryIVR ),
+    url(r'^texttospeech/finalcalldetails',getfinaldetails ),
+    url(r'^texttospeech/hardcopyrecievalIVR',hardcopyrecievalIVR ),
+    url(r'^ocr/adddoc', addDocument),
+    url(r'^ocr/query', query),
+    url(r'^ocr/docstatus',get_doc_status ),
+    url(r'^ocr/upload',fileupload ),
     url(r'^nlu/querydocument',result ),  
 ]
