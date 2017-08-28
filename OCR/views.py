@@ -21,7 +21,7 @@ import csv
 BASE = os.path.dirname(os.path.abspath(__file__))
 
 
-url = 'mongodb://10.0.8.62:27017/'
+url = 'mongodb://localhost:27017/'
 client = MongoClient(url)
 
 db = client.communicationDB
