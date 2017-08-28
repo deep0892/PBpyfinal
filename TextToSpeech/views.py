@@ -40,7 +40,7 @@ sql_datasource=sqlconfig["datasource"]
 sql_con_string ='DRIVER=FreeTDS;DSN=%s;UID=%s;PWD=%s;DATABASE=%s;' % (sql_datasource, sql_username, sql_password ,sql_db)
 
 
-def save_res(leadId,customerId,Policyno,Insurer,mobileno,url,sid):
+def save_res(leadId,customerId,Policyno,Insurer,mobileno,url,sid,flag=""):
     print("saving")
     conn = pyodbc.connect(sql_con_string)
     print(conn)
@@ -48,7 +48,7 @@ def save_res(leadId,customerId,Policyno,Insurer,mobileno,url,sid):
     print(cursor)
     
     #url=url+"&filename=xyz.mp3"    
-    query="INSERT INTO PBCROMA.MTX.VOICEURLDATA(callsid,leadid,customerid,policyno,insurer,mobileno,url) VALUES ('"+sid+"',"+leadId+","+customerId+",'"+Policyno+"','"+Insurer+"',"+mobileno+",'"+url+"');"
+    query="INSERT INTO PBCROMA.MTX.VOICEURLDATA(callsid,leadid,customerid,policyno,insurer,mobileno,url,appidsource) VALUES ('"+sid+"',"+leadId+","+customerId+",'"+Policyno+"','"+Insurer+"',"+mobileno+",'"+url+"','"+flag+"');"
     print("below query")
     print(query)
     cursor.execute(query)
@@ -208,6 +208,24 @@ def get_url(request):
              return HttpResponse(t[0], content_type='text/plain')
          return HttpResponse(status=401)
 
+def saveIVRtoMatrix(leadId,responseId):
+    print("saveIVRtoMatrIX CALLED")
+    print(responseId)
+    matrix_config=collection.find_one({"type":"matrixconfig"})
+    url=matrix_config["url"]
+    Authorization=matrix_config["authorization"]
+    print(url)
+    print(Authorization)
+    headers = {
+               "Authorization":Authorization,
+               "Content-Type": "application/json"
+               }
+    print(headers)
+    r=requests.post(url, headers=headers, data=json.dumps({"LeadId":leadId,"responseId":responseId}))
+    print(r.content)
+    return HttpResponse(r.content, content_type='application/json')
+
+
 @api_view(['GET'])
 def saveExotelResponse(request):
          try:
@@ -245,22 +263,44 @@ def saveExotelResponse(request):
              query_result=cursor.fetchall()
              for row in query_result:
                  leadId=row[1]
-                 print leadId
+                 appidsource=row[9]
+                 print appidsource
+                 print row
 
              cursor.execute("SELECT * FROM PBCROMA.MTX.VoiceUrlData_Response (nolock) WHERE callsid='"+callsid+"';")
              query_result=cursor.fetchall()
+             responsecode=""
+
+             print("digits:"+digits)
 
              print(query_result)
 
              if not query_result:
                 print("No result is found for given Sid")
-                responseId=1
+                if appidsource=="HCR":
+                    if digits=='1':
+                        responsecode="HCR"
+                    elif digits=='2':
+                         responsecode="HCNR"
+                    print("inside qr")
+                    saveIVRtoMatrix(leadId,responsecode)              
              else:
                 print("The given sid is already present in the database")
-                responseId=2
+                if appidsource=="HCR":
+                    print("hcr")
+                    if digits=='1':
+                        responsecode="HCR"
+                    elif digits=='2':
+                        responsecode= "HCNR"
+                        print("2222222222")
+                    print("calling function")
+                    print(responsecode)
+                    #print(leadId)
+                    saveIVRtoMatrix(leadId,responsecode)
+
                 
 
-             saveIVRtoMatrix(leadId,responseId)
+             
 
 
 
@@ -323,26 +363,9 @@ def hardcopyrecievalIVR(request):
     sid=give_a_call(mobileno,"HCR")  
     print("got sid")
 
-    save_res(leadId,'0','','',mobileno,'',sid)   
+    save_res(leadId,'0','','',mobileno,'',sid,"HCR")   
     return Response(status=status.HTTP_200_OK)    
 
 
 
 
-def saveIVRtoMatrix(leadId,responseId):
-   matrix_config=collection.find_one({"type":"matrixconfig"})
-   url=matrix_config["url"]
-   Authorization=matrix_config["authorization"]
-   print(url)
-   print(Authorization)
-   
-   headers = {
-               "Authorization":Authorization,
-               "Content-Type": "application/json"
-   }
-   print(headers)
-
-   r=requests.post(url, headers=headers, data=json.dumps({"LeadId":8551,"responseId":2}))
-
-   print(r.content)
-   return HttpResponse(r.content, content_type='application/json')
