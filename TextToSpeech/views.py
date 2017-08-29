@@ -289,10 +289,9 @@ def saveExotelResponse(request):
                 if appidsource=="HCR":
                     print("hcr")
                     if digits=='1':
-                        responsecode="HCR"
+                        responsecode="HCR_QUERY"
                     elif digits=='2':
-                        responsecode= "HCNR"
-                        print("2222222222")
+                        responsecode= "HCR_NOQUERY"                        
                     print("calling function")
                     print(responsecode)
                     #print(leadId)
