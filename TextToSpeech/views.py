@@ -140,7 +140,8 @@ def give_a_call(mobileno,appidsource=''):
                "From":mobileno,
                "CallerId":CallerId,
                "Url":"http://my.exotel.in/exoml/start/"+appid,
-               "CallType": CallType
+               "CallType": CallType,
+               "MaxRetries":1
     }
     r=requests.post(url, headers=headers, data=payload)
     print(r)
