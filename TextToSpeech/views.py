@@ -117,6 +117,7 @@ def give_a_call(mobileno,appidsource=''):
     CallerId=exotel_config["callerid"]
     CallType=exotel_config["calltype"]
     auth=exotel_config["Authorization"]
+    MaxRetries=exotel_config["maxretries"]
 
 
 
@@ -141,7 +142,7 @@ def give_a_call(mobileno,appidsource=''):
                "CallerId":CallerId,
                "Url":"http://my.exotel.in/exoml/start/"+appid,
                "CallType": CallType,
-               "MaxRetries":1
+               "MaxRetries":MaxRetries
     }
     r=requests.post(url, headers=headers, data=payload)
     print(r)
