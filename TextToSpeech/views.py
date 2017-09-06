@@ -357,7 +357,6 @@ def hardcopyrecievalIVR(request):
     data=request.data
     try:
         leadId=data["leadid"]
-        #customerId=data["customerId"]        
         mobileno=data["mobileno"]
     except:
         return HttpResponse(status=400)    
@@ -366,6 +365,32 @@ def hardcopyrecievalIVR(request):
 
     save_res(leadId,'0','','',mobileno,'',sid,"HCR")   
     return Response(status=status.HTTP_200_OK)    
+
+
+@api_view(['GET'])
+def hardcopycallbackIVR:
+    query="SELECT VUD.leadid,VUD.CallSId,VUD.MobileNo,VUD.AppIDSource FROM MTX.VoiceUrlData VUD (NOLOCK) LEFT JOIN MTX.VoiceUrlData_Response VUDR (NOLOCK) ON VUD.CallSId=VUDR.CallSIdwhere VUD.ts > CAST(GETDATE()-1 AS DATE) AND VUD.ts < DATEADD(MINUTE,-120,GETDATE()) AND IsActive=1 AND AppIDSource='HCR'AND DATEPART(HOUR,GETDATE()) > 10 AND DATEPART(HOUR,GETDATE()) < 19 AND VUDR.CallSId IS NULL"
+    conn = pyodbc.connect(sql_con_string)
+    cursor = conn.cursor()
+    cursor.execute(query)
+    callback=cursor.fetchall()
+    if callback.rowcount==0:
+        return Response(status=status.HTTP_200_OK) 
+
+    print(callback)
+
+    for contacts in callback:
+        payload = {
+               "leadid":contacts[0],
+               "mobileno":contacts[2],
+               
+               }
+        url="http://10.34.83.17/texttospeech/hardcopyrecievalIVR"
+        r=requests.post(url, data=payload)
+        print(r)
+    return Response(status=status.HTTP_200_OK)  
+
+
 
 
 
