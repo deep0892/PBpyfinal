@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'r(wyvdki^(mgj7)_1v=$ai3*ekowt+k2m4r800v+^053!1_2rq'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['pblabsapi.policybazaar.com','127.0.1.1','10.0.32.94','10.34.83.17','localhost', '127.0.0.1','10.0.48.40','public.localhost','private.localhost' ]
 
