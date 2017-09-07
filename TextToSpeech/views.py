@@ -381,17 +381,18 @@ def hardcopyrecievalIVR(request):
 
 
 @api_view(['GET'])
-def hardcopycallbackIVR:
-    query="SELECT VUD.leadid,VUD.CallSId,VUD.MobileNo,VUD.AppIDSource FROM MTX.VoiceUrlData VUD (NOLOCK) LEFT JOIN MTX.VoiceUrlData_Response VUDR (NOLOCK) ON VUD.CallSId=VUDR.CallSIdwhere VUD.ts > CAST(GETDATE()-1 AS DATE) AND VUD.ts < DATEADD(MINUTE,-120,GETDATE()) AND IsActive=1 AND AppIDSource='HCR'AND DATEPART(HOUR,GETDATE()) > 10 AND DATEPART(HOUR,GETDATE()) < 19 AND VUDR.CallSId IS NULL"
+def hardcopycallbackIVR(request):
+    query="SELECT VUD.leadid,VUD.CallSId,VUD.MobileNo,VUD.AppIDSource FROM MTX.VoiceUrlData VUD (NOLOCK) LEFT JOIN MTX.VoiceUrlData_Response VUDR (NOLOCK) ON VUD.CallSId=VUDR.CallSId where VUD.ts > CAST(GETDATE()-1 AS DATE) AND VUD.ts < DATEADD(MINUTE,-120,GETDATE()) AND IsActive=1 AND AppIDSource='HCR'AND DATEPART(HOUR,GETDATE()) > 10 AND DATEPART(HOUR,GETDATE()) < 19 AND VUDR.CallSId IS NULL"
     conn = pyodbc.connect(sql_con_string)
     cursor = conn.cursor()
+    print(query)
     cursor.execute(query)
     callback=cursor.fetchall()
-    if callback.rowcount==0:
-        return Response(status=status.HTTP_200_OK) 
-
     print(callback)
+    #if not callback:
+    #    return Response(status=status.HTTP_200_OK) 
 
+    
     for contacts in callback:
         payload = {
                "leadid":contacts[0],
