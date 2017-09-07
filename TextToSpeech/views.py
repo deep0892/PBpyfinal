@@ -263,11 +263,24 @@ def saveExotelResponse(request):
 
              cursor.execute("SELECT * FROM PBCROMA.MTX.VOICEURLDATA (nolock) WHERE callsid='"+callsid+"';")
              query_result=cursor.fetchall()
+        
              for row in query_result:
                  leadId=row[1]
                  appidsource=row[9]
                  print appidsource
                  print row
+
+            #inbound call logic
+            if not query_result:
+                cursor.execute("SELECT * FROM PBCROMA.MTX.VOICEURLDATA (nolock) WHERE mobileno='"+mobileno+"';")
+                inboundcalls=cursor.fetchall()
+
+                for inboundcall in inboundcalls:
+                    leadId=row[1]
+                    appidsource=row[9]
+            #inboundcall logic ends
+
+
 
              cursor.execute("SELECT * FROM PBCROMA.MTX.VoiceUrlData_Response (nolock) WHERE callsid='"+callsid+"';")
              query_result=cursor.fetchall()
