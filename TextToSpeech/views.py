@@ -405,6 +405,23 @@ def hardcopycallbackIVR(request):
     return Response(status=status.HTTP_200_OK)  
 
 
+@api_view(['GET'])
+def maptoSP(request):
+    data=request.query_params
+    procedure=data['proc']
+    proc=collection.find_one({"_id":"SP_Param_Mapping"})
+    
+    proc=proc['mappings'][procedure]
+
+    conn = pyodbc.connect(sql_con_string)
+    cursor = conn.cursor()
+    cursor.execute(proc)
+    return Response(status=status.HTTP_200_OK) 
+
+
+
+
+
 
 
 
