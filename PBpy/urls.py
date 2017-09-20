@@ -17,7 +17,7 @@ from django.conf.urls import url,include
 from django.contrib import admin
 from NLU.views import result
 #from TextToSpeech.views import get_url,saveExotelResponse
-from TextToSpeech.views import pollyexotel,samedayexpiryIVR,getfinaldetails,hardcopyrecievalIVR,hardcopycallbackIVR,get_url,saveExotelResponse
+from TextToSpeech.views import pollyexotel,samedayexpiryIVR,getfinaldetails,hardcopyrecievalIVR,hardcopycallbackIVR,get_url,saveExotelResponse,maptoSP
 from OCR.views import addDocument,query,get_doc_status,fileupload
 
 
@@ -38,6 +38,7 @@ urlpatterns = [
     url(r'^texttospeech/finalcalldetails',getfinaldetails ),
     url(r'^texttospeech/hardcopyrecievalIVR',hardcopyrecievalIVR ),
     url(r'^texttospeech/hardcopycallbackIVR',hardcopycallbackIVR ),
+    url(r'^texttospeech/spmap',maptoSP ),
     url(r'^ocr/adddoc', addDocument),
     url(r'^ocr/query', query),
     url(r'^ocr/docstatus',get_doc_status ),
