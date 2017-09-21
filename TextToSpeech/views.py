@@ -31,7 +31,7 @@ db = client.communicationDB
 #connect to sql database
 
 collection=db.PythonAPISettings
-sqlconfig=collection.find_one({"type":"sqldatabaseconfig"})
+sqlconfig=collection.find_one({"_id":"sqldatabaseconfig"})
 print(sqlconfig)
 sql_username=sqlconfig["username"]
 sql_password=sqlconfig["password"]
@@ -69,7 +69,7 @@ def geturl(filename,leadId,customerId):
 
 def save_polly(policyno, insurer,leadid,customerId):
     collection=db.PythonAPISettings
-    polly_config=collection.find_one({"type":"pollyconfig"})
+    polly_config=collection.find_one({"_id":"pollyconfig"})
     print(polly_config)
 
     region=polly_config["region_name"]
@@ -82,7 +82,7 @@ def save_polly(policyno, insurer,leadid,customerId):
     insurer=str(insurer)
 
     collection=db.PythonAPISettings
-    speech_config=collection.find_one({"type":"speechconfig"})
+    speech_config=collection.find_one({"_id":"speechconfig"})
     speech=speech_config["speech"]
     print(speech)
 
@@ -110,7 +110,7 @@ def save_polly(policyno, insurer,leadid,customerId):
 def give_a_call(mobileno,appidsource=''):  
 
     collection=db.PythonAPISettings
-    exotel_config=collection.find_one({"type":"exotelconfig"})
+    exotel_config=collection.find_one({"_id":"exotelconfig"})
     print(exotel_config)
     
     url=exotel_config["url"]
@@ -213,7 +213,7 @@ def get_url(request):
 def saveIVRtoMatrix(leadId,responseId):
     print("saveIVRtoMatrIX CALLED")
     print(responseId)
-    matrix_config=collection.find_one({"type":"matrixconfig"})
+    matrix_config=collection.find_one({"_id":"matrixconfig"})
     url=matrix_config["url"]
     Authorization=matrix_config["authorization"]
     print(url)
@@ -271,7 +271,7 @@ def saveExotelResponse(request):
                  print row
 
             #inbound call logic
-            if not query_result:
+             if not query_result:
                 cursor.execute("SELECT * FROM PBCROMA.MTX.VOICEURLDATA (nolock) WHERE mobileno='"+mobileno+"';")
                 inboundcalls=cursor.fetchall()
 
@@ -412,6 +412,8 @@ def maptoSP(request):
     proc=collection.find_one({"_id":"SP_Param_Mapping"})
     
     proc=proc['mappings'][procedure]
+
+    print(proc)
 
     conn = pyodbc.connect(sql_con_string)
     cursor = conn.cursor()

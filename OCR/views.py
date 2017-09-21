@@ -29,7 +29,7 @@ db = client.communicationDB
 #connect to sql database
 
 collection=db.PythonAPISettings
-sqlconfig=collection.find_one({"type":"sqldatabaseconfig"})
+sqlconfig=collection.find_one({"_id":"sqldatabaseconfig"})
 
 print(sqlconfig)
 sql_username=sqlconfig["username"]
@@ -39,7 +39,7 @@ sql_datasource=sqlconfig["datasource"]
 sql_con_string ='DRIVER=FreeTDS;DSN=%s;UID=%s;PWD=%s;DATABASE=%s;' % (sql_datasource, sql_username, sql_password ,sql_db)
 
 collection=db.PythonAPISettings
-watson_config=collection.find_one({"type":"watsonconfig"})
+watson_config=collection.find_one({"_id":"watsonconfig"})
 print(watson_config)
 
 uname=watson_config["username"]
