@@ -122,11 +122,9 @@ def give_a_call(mobileno,appidsource=''):
 
 
     if appidsource=='':
-        appid=exotel_config["appid"]
-    elif appidsource=='SDE':
-        appid=exotel_config["appid_SDE"]
+        appid=exotel_config["appid"]    
     else:
-        appid=exotel_config["appid_HCR"]
+        appid=exotel_config["appid_" + appidsource]
     
     print(appid)
  
@@ -171,14 +169,16 @@ def pollyexotel(request):
 
 @api_view(['POST'])
 def samedayexpiryIVR(request):    
+    print 'hello same day'
     data=request.data
     try:
         leadId=data["leadId"]
         customerId=data["customerId"]        
         mobileno=data["mobileno"]
+        appid=data["appid"]
     except:
         return HttpResponse(status=400)    
-    sid=give_a_call(mobileno,"SDE")  
+    sid=give_a_call(mobileno,appid)  
     save_res(leadId,customerId,'','',mobileno,'',sid)   
     return Response(status=status.HTTP_200_OK)    
 
@@ -406,7 +406,7 @@ def hardcopycallbackIVR(request):
 
 
 @api_view(['GET'])
-def maptoSP(request):
+def maptoSP(request):    
     data=request.query_params
     procedure=data['proc']
     proc=collection.find_one({"_id":"SP_Param_Mapping"})
