@@ -168,12 +168,12 @@ def pollyexotel(request):
     return Response(status=status.HTTP_200_OK)
 
 @api_view(['POST'])
-def samedayexpiryIVR(request):    
-    print 'hello same day'
+def CommonIVRCall(request):     
+    print 'CoomonIVRCall'   
     data=request.data
     try:
-        leadId=data["leadId"]
-        customerId=data["customerId"]        
+        leadId=data["leadid"]
+        customerId=data["customerid"]        
         mobileno=data["mobileno"]
         appid=data["appid"]
     except:
@@ -417,7 +417,10 @@ def maptoSP(request):
 
     conn = pyodbc.connect(sql_con_string)
     cursor = conn.cursor()
-    cursor.execute(proc)
+    cursor.execute("MTX.HCRRetryData")
+    print(cursor.fetchall())
+    #cursor.execute(proc)
+    
     return Response(status=status.HTTP_200_OK) 
 
 
