@@ -142,7 +142,11 @@ def give_a_call(mobileno,appidsource=''):
                "CallType": CallType,
                "MaxRetries":MaxRetries
     }
+    a=datetime.datetime.now()
     r=requests.post(url, headers=headers, data=payload)
+    b=datetime.datetime.now()
+    print("Exotel time: " )
+    print(b-a)
     print(r)
     res=r.content
     root = ET.fromstring(res)
@@ -177,9 +181,9 @@ def CommonIVRCall(request):
         mobileno=data["mobileno"]
         appid=data["appid"]
     except:
-        return HttpResponse(status=400)    
+        return HttpResponse(status=400)
     sid=give_a_call(mobileno,appid)  
-    save_res(leadId,customerId,'','',mobileno,'',sid)   
+    save_res(leadId,customerId,'','',mobileno,'',sid,appid)   
     return Response(status=status.HTTP_200_OK)    
 
 
