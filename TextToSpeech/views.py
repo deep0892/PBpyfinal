@@ -22,7 +22,7 @@ from pymongo import MongoClient
 BASE = os.path.dirname(os.path.abspath(__file__))
 
 
-url = 'mongodb://10.0.8.62:27017/'
+url = 'mongodb://10.80.30.186:27017,10.80.40.253:27017/?replicaSet=rs3&readPreference=secondary'
 client = MongoClient(url)
 
 
