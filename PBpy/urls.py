@@ -19,6 +19,7 @@ from NLU.views import result
 #from TextToSpeech.views import get_url,saveExotelResponse
 from TextToSpeech.views import pollyexotel,samedayexpiryIVR,getfinaldetails,hardcopyrecievalIVR,hardcopycallbackIVR,get_url,saveExotelResponse,maptoSP
 from OCR.views import addDocument,query,get_doc_status,fileupload
+from livai.views import transcription, tags,transcriptionchat, index,registertag
 
 
 #from rest_framework import routers
@@ -43,5 +44,12 @@ urlpatterns = [
     url(r'^ocr/query', query),
     url(r'^ocr/docstatus',get_doc_status ),
     url(r'^ocr/upload',fileupload ),
-    url(r'^nlu/querydocument',result ),  
+    url(r'^nlu/querydocument',result ),
+    
+    url(r'^livai/transcription/', transcription),
+    url(r'^livai/tags/', tags),
+    url(r'^livai/chat/', transcriptionchat),
+    url(r'^livai/registertag/', registertag),
+    url(r'livai/^', index),
+
 ]

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <title>Liv.ai Test </title>
+    <body>
+        <h1>Liv.ai Test (Chat View) (Supported formats- .mp3 , .wav)</h1>
+         <form method="post" action="" enctype="multipart/form-data">
+        
+            Agent:&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+            <input type="file" name="agentaudio" accept="audio/*" >
+
+            <br><br>
+            
+            Customer:&nbsp&nbsp&nbsp&nbsp
+            <input type="file" name="customeraudio" accept="audio/*" >
+
+            <br><br>
+            
+            <input type="submit">
+            {% csrf_token %}
+        </form>
+
+        <br><br>
+        <br>Transcript:- <br><br>
+        {% for agent,customer in chat %}
+             <b>Agent:&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp </b>{{agent}}
+             <br><br>
+             <b>Customer:&nbsp&nbsp&nbsp&nbsp </b>{{customer}}
+             <br><br>
+        {% endfor %}
+    </body>
+</html>

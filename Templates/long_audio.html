@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <title>Liv.ai Test </title>
+    <body>
+        <h1>Liv.ai Test (Multiple upload supported ,Supported formats- .mp3 , .wav)</h1>
+         <form method="post" action="" enctype="multipart/form-data">
+            <input type="file" name="audio" accept="audio/*" multiple>
+            <input type="submit">
+            {% csrf_token %}
+        </form>
+
+        <br><br>
+        <br>Transcript:- <br><br>
+        {% for result in results %}
+             {{result}}
+             <br><br>
+        {% endfor %}
+    </body>
+</html>
