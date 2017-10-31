@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'TextToSpeech',
     'OCR',
-    'NLU'
+    'NLU',
+    'livai'
 ]
 
 

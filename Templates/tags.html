@@ -1,0 +1,24 @@
+ <!DOCTYPE html>
+<html>
+    <title>Liv.ai Tag Test </title>
+    <body>
+        <h1>Liv.ai Tag Test (Supported formats- .mp3 , .wav)</h1>
+         <form method="post" action="" enctype="multipart/form-data">
+            <input type="file" name="audio" accept="audio/*"> <!-- multiple> -->
+            <input type="submit">
+            {% csrf_token %}
+        </form>
+
+        <br><br>
+        <br>Transcript:- <br><br>
+
+        {% for result in results %}
+             Text :  {{result.text_eng}} <br>
+             Time Second : {{result.time_sec}} <br>
+             Confidence Scrore : {{result.confidence_score}}
+             <br>
+             <br>
+             <br>
+        {% endfor %}
+    </body>
+</html>
