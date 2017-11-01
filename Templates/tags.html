@@ -4,7 +4,10 @@
     <body>
         <h1>Liv.ai Tag Test (Supported formats- .mp3 , .wav)</h1>
          <form method="post" action="" enctype="multipart/form-data">
-            <input type="file" name="audio" accept="audio/*"> <!-- multiple> -->
+            Select file:<br>
+            <input type="file" name="audio" accept="audio/*"> <br><br>
+            Enter Tags Saperated by spaces:<br>
+            <input type="text" name="tagnames">
             <input type="submit">
             {% csrf_token %}
         </form>

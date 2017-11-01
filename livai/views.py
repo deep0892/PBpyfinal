@@ -81,7 +81,7 @@ def tagssessionstatus(sessionid):
     tags_status = upload_result['tags_status']
     return tags_status 
 
-def registertag(request):
+def registertag():
     headers = {'Authorization' : appid}
     data = {'user' : '13170', 'language' : 'EN'}
     files = {'tag_file' : open('tags.txt','rb')}
@@ -90,15 +90,34 @@ def registertag(request):
     print(res.content)
     upload_result = json.loads(res.content)
     status =  upload_result["status"]
-    return HttpResponse(status)
+    print(status)
+    
+    if status == "success":
+        return True 
+    
 
 
 
 def tags(request):
     if request.method=="POST" and request.FILES['audio']:
         
-        audio=request.FILES['audio']
-        filedata=audio.read()
+        audio = request.FILES['audio']
+        tagnames = request.POST.get("tagnames")
+        tagnames =tagnames.split()
+
+        f = open('tags.txt','w')
+        f.write("add\n")
+        with open("tags.txt", "w") as text_file:
+            for tagname in tagnames:
+                text_file.write(tagname + "\n")
+            print("done")
+
+        f.close()
+
+
+        registertag()
+
+        filedata = audio.read()
         destination = open('test.mp3', 'wb')
         
         for chunk in audio.chunks():
@@ -140,6 +159,10 @@ def tags(request):
 def transcriptionchat(request):
     if request.method=="POST" and request.FILES['agentaudio'] and request.FILES['customeraudio']:
          audio=request.FILES['agentaudio']
+         splittime = request.POST.get("splittime")
+
+         splittime = int(splittime)
+
          filedata=audio.read()
          
          destination = open('test.mp3', 'wb')
@@ -184,7 +207,7 @@ def transcriptionchat(request):
          start=agentwordinfo[0][1]
          #print(start)
          for info in agentwordinfo:
-            if (info[1] - start >= 3):
+            if (info[1] - start >= splittime):
                  start = info[1]
                  lineindex.append(info[0]-1)
         
@@ -263,7 +286,7 @@ def transcriptionchat(request):
          start = customerwordinfo[0][1]
          #print(start)
          for info in customerwordinfo:
-            if (info[1] - start >= 3):
+            if (info[1] - start >= splittime):
                  start = info[1]
                  lineindex.append(info[0]-1)
         
