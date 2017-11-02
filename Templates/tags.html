@@ -7,7 +7,7 @@
             Select file:<br>
             <input type="file" name="audio" accept="audio/*"> <br><br>
             Enter Tags Saperated by spaces:<br>
-            <input type="text" name="tagnames">
+            <textarea rows="10" cols="70" name="tagnames"></textarea>
             <input type="submit">
             {% csrf_token %}
         </form>
