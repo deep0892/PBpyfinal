@@ -50,6 +50,6 @@ urlpatterns = [
     url(r'^livai/tags/', tags),
     url(r'^livai/chat/', transcriptionchat),
     url(r'^livai/registertag/', registertag),
-    url(r'livai/^', index),
+    url(r'^livai/', index),
 
 ]
