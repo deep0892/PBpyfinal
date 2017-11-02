@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html>
+    <head>
     <title>Liv.ai Test </title>
+    <style>
+        .left {
+            float: left;
+            width: 50%;
+            }
+        .right {
+            float: left;
+            width: 50%;
+            }
+    </style>
+    </head>
     <body>
         <h1>Liv.ai Test (Chat View) (Supported formats- .mp3 , .wav)</h1>
          <form method="post" action="" enctype="multipart/form-data">
@@ -29,10 +41,14 @@
         <br><br>
         <br>Transcript:- <br><br>
         {% for agent,customer in chat %}
-             <b>Agent:&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp </b>{{agent}}
-             <br><br>
-             <b>Customer:&nbsp&nbsp&nbsp&nbsp </b>{{customer}}
-             <br><br>
+            <div class="left">
+                <b>Agent:&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp </b>{{agent}}
+                <br><br>
+            </div>
+            <div class="left">
+                <b>Customer:&nbsp&nbsp&nbsp&nbsp </b>{{customer}}
+                <br><br>
+            </div>
         {% endfor %}
     </body>
 </html>

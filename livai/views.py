@@ -105,8 +105,9 @@ def tags(request):
         tagnames = request.POST.get("tagnames")
         tagnames =tagnames.split()
 
+        print(tagnames)
+
         f = open('tags.txt','w')
-        f.write("add\n")
         with open("tags.txt", "w") as text_file:
             for tagname in tagnames:
                 text_file.write(tagname + "\n")
@@ -204,11 +205,11 @@ def transcriptionchat(request):
          #print(agentwordinfo)
 
          lineindex=[]
-         start=agentwordinfo[0][1]
+         start=agentwordinfo[0][2]
          #print(start)
          for info in agentwordinfo:
             if (info[1] - start >= splittime):
-                 start = info[1]
+                 start = info[2]
                  lineindex.append(info[0]-1)
         
          #print(lineindex)
@@ -283,11 +284,11 @@ def transcriptionchat(request):
          print(customerwordinfo)
 
          lineindex = []
-         start = customerwordinfo[0][1]
+         start = customerwordinfo[0][2]
          #print(start)
          for info in customerwordinfo:
             if (info[1] - start >= splittime):
-                 start = info[1]
+                 start = info[2]
                  lineindex.append(info[0]-1)
         
          #print(lineindex)
